@@ -1,0 +1,203 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:storage="clr-namespace:Microsoft.Maui.Storage;assembly=Microsoft.Maui.Essentials"
+             xmlns:models="clr-namespace:ImageRotatorBackend.Models;assembly=ImageRotatorBackend"
+             xmlns:viewmodel="clr-namespace:ImageRotatorGUI_MAUI.ViewModels"
+             xmlns:converters="clr-namespace:ImageRotatorGUI_MAUI.Converters"
+             x:DataType="viewmodel:MainPageViewModel"
+             x:Class="ImageRotatorGUI_MAUI.Views.MainPage"
+             Title="{Binding Title}">
+
+    <ContentPage.Resources>
+        <converters:BoolToDoubleConverter x:Key="boolToDouble"/>
+        <converters:StringToDoubleConverter x:Key="stringToDouble"/>
+    </ContentPage.Resources>
+
+    <Grid
+        ColumnDefinitions="*,300"
+        ColumnSpacing="5"
+        RowDefinitions="*,100"
+        BackgroundColor="LightGray">
+
+        <ScrollView>
+            <FlexLayout
+                x:Name="imageRotateField"
+                BackgroundColor="DarkGray"
+            
+                Wrap="Wrap"
+                JustifyContent="SpaceAround"
+                AlignItems="Center"
+                AlignContent="SpaceBetween"
+            
+                BindableLayout.ItemsSource="{Binding SelectedImageFiles}">
+
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:SelectedImageInfo">
+
+                        <Image
+                            x:Name="image"
+                                
+                            Aspect="AspectFit"
+                            HeightRequest="400"
+                                
+                            VerticalOptions="Center"
+                            HorizontalOptions="Center"
+                            
+                            Margin="5"
+                                
+                            FlexLayout.AlignSelf="Center"
+                            FlexLayout.Basis="33.3%"
+                            FlexLayout.Grow="0"
+                            FlexLayout.Shrink="0"
+
+                            Source="{Binding FileInfo.FullPath}">
+
+                            <Image.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    CommandParameter="{Binding Source={RelativeSource AncestorType={x:Type Image}}}"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainPageViewModel}}, Path=ImageTappedCommand}"/>
+                            </Image.GestureRecognizers>
+                        </Image>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+
+            </FlexLayout>
+        </ScrollView>
+
+        <VerticalStackLayout
+            Grid.Column="0"
+            Grid.Row="1"
+            HorizontalOptions="Center"
+            VerticalOptions="Center">
+            <Label 
+                Text="Degrees of Rotation"
+                HorizontalOptions="Center"></Label>
+            <Entry
+                x:Name="entryField"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                VerticalTextAlignment="Center"
+                HorizontalTextAlignment="Center"
+                
+                TextColor="White"
+                BackgroundColor="Gray"
+                
+                Text="{Binding Path=RotationDegrees, Mode=TwoWay, StringFormat='{0:F0}'}"></Entry>
+            <Slider
+                x:Name="slider"
+                Minimum="-360"
+                Maximum="360"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                WidthRequest="720"
+                MinimumTrackColor="DarkGray"
+                MaximumTrackColor="DarkGray"
+                ThumbColor="Navy"
+                
+                Value="{Binding RotationDegrees, Mode=TwoWay}"></Slider>
+        </VerticalStackLayout>
+
+        <VerticalStackLayout
+            Grid.Column="1"
+            Grid.RowSpan="2">
+            
+            <CollectionView
+                BackgroundColor="DarkGray"
+                VerticalOptions="StartAndExpand"
+                MinimumHeightRequest="480"
+                MaximumHeightRequest="700"
+                
+                ItemsSource="{Binding LoadedImageFiles}"
+                SelectionMode="Multiple">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="storage:FileResult">
+
+                        <Frame
+                            HeightRequest="125"
+                            Margin="10"
+                            HorizontalOptions="CenterAndExpand"
+                            BackgroundColor="Gray"
+                            CornerRadius="5">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    CommandParameter="{Binding .}"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainPageViewModel}}, Path=LoadedFilesSelectionChangeCommand}"/>
+                            </Frame.GestureRecognizers>
+
+                            <VerticalStackLayout
+                                Spacing="5"
+                                VerticalOptions="StartAndExpand">
+
+                                <Label
+                                    Text="{Binding FileName}"
+                                    TextColor="LightGray"/>
+                                <Label
+                                    Text="{Binding ContentType}"/>
+                                <Label
+                                    Text="{Binding FullPath}"
+                                    TextColor="DarkGray"/>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+            <HorizontalStackLayout
+                BackgroundColor="LightGray"
+                HorizontalOptions="Center">
+                <Button
+                    Text="Load Images"
+                    BackgroundColor="Gray"
+                    TextColor="White"
+                    HorizontalOptions="Center"
+                    
+                    Command="{Binding BrowseFilesCommand}"></Button>
+                <Button
+                    Text="Save Edits"
+                    BackgroundColor="Gray"
+                    TextColor="White"
+                    HorizontalOptions="Center"
+                    
+                    Command="{Binding SaveEditsCommand}"></Button>
+            </HorizontalStackLayout>
+
+            <CollectionView
+                BackgroundColor="Gray"
+                MinimumHeightRequest="150"
+                MaximumHeightRequest="300"
+                VerticalOptions="Start"
+                HorizontalOptions="Fill"
+                
+                ItemsSource="{Binding ConsoleMessagesList}"
+                SelectionMode="None">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:RotateTaskInfo">
+
+                        <HorizontalStackLayout
+                            Spacing="5">
+
+                                <Label
+                                    Text="{Binding ThreadNum, StringFormat='Thread number {0:F0} '}"
+                                    TextColor="LightGreen"/>
+                                <Label
+                                    Text="{Binding ImageName, StringFormat=' is working on image {} '}"
+                                    TextColor="LightGreen"/>
+                                <Label
+                                    Text="{Binding ElapsedTime, StringFormat=' - elapsed time: {} '}"
+                                    TextColor="LightGreen"/>
+                            </HorizontalStackLayout>
+
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                
+            </CollectionView>
+            
+        </VerticalStackLayout>
+    </Grid>
+
+</ContentPage>
